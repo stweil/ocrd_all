@@ -83,7 +83,7 @@ endif
 # to ensure they are re-built (not considered up-to-date) when re-entering
 .DELETE_ON_ERROR:
 
-.PHONY: all modules clean help show check always-update install-models
+.PHONY: all modules clean help show check install-models
 
 clean: # add more prerequisites for clean below
 	$(RM) -r $(SUB_VENV)
@@ -131,22 +131,32 @@ export HELP
 help: ;	@eval "$$HELP"
 
 # update subrepos to the committed revisions:
-# - depends on phony always-update,
+# - is phony,
 #   so this will not only work on first checkout
 # - updates the module to the revision registered here,
 #   unless it is already up-to-date
 # - then updates the time stamp of the module directory
 #   so the directory can be used as a dependency
 # - synchronize via mutex to avoid race for git lock file
-modules: $(OCRD_MODULES)
+$(OCRD_MODULES): modules
+RECURSIVE_MODULES = ocrd_fileformat ocrd_olena opencv-python
+modules:
 # but bypass updates if we have no repo here (e.g. Docker build)
 ifneq (,$(wildcard .git))
 ifneq ($(NO_UPDATE),1)
-$(OCRD_MODULES): always-update
-	$(SEMGIT) git submodule sync $(GIT_RECURSIVE) $@
-	if git submodule status $(GIT_RECURSIVE) $@ | grep -qv '^ '; then \
-		$(SEMGIT) git submodule update --init $(GIT_RECURSIVE) $(GIT_DEPTH) $@ && \
-		touch $@; fi
+	git submodule sync $(GIT_RECURSIVE)
+	for module in $(OCRD_MODULES); do \
+	    if git submodule status $(GIT_RECURSIVE) $$module | grep -qv '^ '; then \
+	        git submodule update --init $(GIT_RECURSIVE) $$module && \
+	        touch $$module; \
+	    fi; \
+	done
+	for module in $(filter $(RECURSIVE_MODULES),$(OCRD_MODULES)); do \
+	    if git submodule status --recursive $$module | grep -qv '^ '; then \
+		git submodule update --init --recursive $$module && \
+		touch $$module; \
+	    fi; \
+	done
 endif
 endif
 
@@ -203,7 +213,6 @@ ifneq ($(findstring opencv-python, $(OCRD_MODULES)),)
 CUSTOM_DEPS += cmake gcc g++
 # libavcodec-dev libavformat-dev libswscale-dev libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev
 # libpng-dev libjpeg-dev libopenexr-dev libtiff-dev libwebp-dev libjasper-dev
-opencv-python: GIT_RECURSIVE = --recursive
 opencv-python/setup.py: opencv-python
 $(SHARE)/opencv-python: opencv-python/setup.py | $(ACTIVATE_VENV) $(SHARE) $(SHARE)/numpy
 	. $(ACTIVATE_VENV) && cd opencv-python && ENABLE_HEADLESS=1 $(PYTHON) setup.py bdist_wheel

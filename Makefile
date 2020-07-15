@@ -106,13 +106,13 @@ modules:
 ifneq (,$(wildcard .git))
 	git submodule sync --recursive
 	for module in $(filter-out $(RECURSIVE_MODULES),$(OCRD_MODULES)); do \
-	    if git submodule status $(GIT_RECURSIVE) $$module | grep -qv '^ '; then \
+	    if git submodule status $(GIT_RECURSIVE) $$module | grep -qv '^ .*[(]'; then \
 		git submodule update --init $(GIT_RECURSIVE) $$module && \
 		touch $$module; \
 	    fi; \
 	done
 	for module in $(filter $(RECURSIVE_MODULES),$(OCRD_MODULES)); do \
-	    if git submodule status --recursive $$module | grep -qv '^ '; then \
+	    if git submodule status --recursive $$module | grep -qv '^ .*[(]'; then \
 		git submodule update --init --recursive $$module && \
 		touch $$module; \
 	    fi; \

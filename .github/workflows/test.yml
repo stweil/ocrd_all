@@ -1,0 +1,111 @@
+name: Test CI
+
+# https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        description: 'Operating system'
+        required: true
+        default: any
+        type: choice
+        options:
+          - any
+          - ubuntu-18.04
+          - ubuntu-20.04
+      python-version:
+        description: 'Python version'
+        required: true
+        default: any
+        type: choice
+        options:
+          - any
+          - '3.6'
+          - '3.7'
+          - '3.8'
+          - '3.9'
+          - '3.10'
+
+env:
+  OS: ${{ github.event.inputs.os }}
+  PYTHON_VERSION: ${{ github.event.inputs.python-version }}
+
+jobs:
+  build-any:
+    # https://docs.github.com/en/actions/learn-github-actions/expressions
+    if: ${{ (github.event.inputs.os == 'any') && (github.event.inputs.python-version == 'any') }}
+
+    runs-on: ${{matrix.config.os}}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { os: ubuntu-18.04, python-version: '3.6' }
+          - { os: ubuntu-18.04, python-version: '3.7' }
+          - { os: ubuntu-18.04, python-version: '3.8' }
+          - { os: ubuntu-18.04, python-version: '3.9' }
+          - { os: ubuntu-18.04, python-version: '3.10' }
+          - { os: ubuntu-20.04, python-version: '3.6' }
+          - { os: ubuntu-20.04, python-version: '3.7' }
+          - { os: ubuntu-20.04, python-version: '3.8' }
+          - { os: ubuntu-20.04, python-version: '3.9' }
+          - { os: ubuntu-20.04, python-version: '3.10' }
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.config.python-version }}
+        architecture: x64
+    - name: Show python path
+      run: type python${{ matrix.config.python-version }}
+
+  build-any-os:
+    if: ${{ (github.event.inputs.os == 'any') && (github.event.inputs.python-version != 'any') }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { os: ubuntu-18.04 }
+          - { os: ubuntu-20.04  }
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ github.event.inputs.python-version }}
+        architecture: x64
+    - name: Show python path
+      run: type python${{ github.event.inputs.python-version }}
+
+  build-any-python:
+    if: ${{ (github.event.inputs.os != 'any') && (github.event.inputs.python-version == 'any') }}
+    runs-on: ${{ github.event.inputs.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { python-version: '3.6' }
+          - { python-version: '3.7' }
+          - { python-version: '3.8' }
+          - { python-version: '3.9' }
+          - { python-version: '3.10' }
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.config.python-version }}
+        architecture: x64
+    - name: Show python path
+      run: type python${{ matrix.config.python-version }}
+
+  build:
+    if: ${{ (github.event.inputs.os != 'any') && (github.event.inputs.python-version != 'any') }}
+    runs-on: ${{ github.event.inputs.os }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ github.event.inputs.python-version }}
+        architecture: x64
+    - name: Show python path
+      run: type python${{ github.event.inputs.python-version }}

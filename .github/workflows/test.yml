@@ -1,0 +1,48 @@
+name: Test CI
+
+# https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
+on:
+  push:
+    # branches: [ ci ]
+  pull_request:
+    # branches: [ ci ]
+  workflow_dispatch:
+    inputs:
+      config:
+        description: 'Build environment'
+        required: true
+        type: choice
+        options:
+          - { os: ubuntu-18.04, python-version: '3.6' }
+          - { os: ubuntu-18.04, python-version: '3.7' }
+          - { os: ubuntu-18.04, python-version: '3.8' }
+          - { os: ubuntu-18.04, python-version: '3.9' }
+          - { os: ubuntu-18.04, python-version: '3.10' }
+
+jobs:
+  linux:
+    runs-on: ${{matrix.config.os}}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { os: ubuntu-18.04, python-version: '3.6' }
+          - { os: ubuntu-18.04, python-version: '3.7' }
+          - { os: ubuntu-18.04, python-version: '3.8' }
+          - { os: ubuntu-18.04, python-version: '3.9' }
+          - { os: ubuntu-18.04, python-version: '3.10' }
+          - { os: ubuntu-20.04, python-version: '3.6' }
+          - { os: ubuntu-20.04, python-version: '3.7' }
+          - { os: ubuntu-20.04, python-version: '3.8' }
+          - { os: ubuntu-20.04, python-version: '3.9' }
+          - { os: ubuntu-20.04, python-version: '3.10' }
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.config.python-version }}
+        architecture: x64
+
+    - name: Show python path
+      run: type python${{matrix.config.python-version}}

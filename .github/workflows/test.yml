@@ -2,22 +2,7 @@ name: Test CI
 
 # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
 on:
-  push:
-    # branches: [ ci ]
-  pull_request:
-    # branches: [ ci ]
   workflow_dispatch:
-    inputs:
-      config:
-        description: 'Build environment'
-        required: true
-        type: choice
-        options:
-          - { os: ubuntu-18.04, python-version: '3.6' }
-          - { os: ubuntu-18.04, python-version: '3.7' }
-          - { os: ubuntu-18.04, python-version: '3.8' }
-          - { os: ubuntu-18.04, python-version: '3.9' }
-          - { os: ubuntu-18.04, python-version: '3.10' }
 
 jobs:
   linux:

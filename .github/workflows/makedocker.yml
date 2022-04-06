@@ -44,6 +44,7 @@ jobs:
     - name: Remove Docker images
       run: |
            df -h
+           NONINTERACTIVE=1 /bin/bash -cx "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh)"
            docker images
            docker rmi $(docker images --filter=reference="alpine:*" -q)
            docker rmi $(docker images --filter=reference="debian:*" -q)

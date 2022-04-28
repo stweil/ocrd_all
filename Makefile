@@ -247,7 +247,7 @@ $(call multirule,$(OCRD_COR_ASV_ANN)): cor-asv-ann $(SUB_VENV_TF1)/bin/activate
 ifeq (0,$(MAKELEVEL))
 	$(MAKE) -B -o $< $(notdir $(OCRD_COR_ASV_ANN)) VIRTUAL_ENV=$(SUB_VENV_TF1)
 	$(call delegate_venv,$(OCRD_COR_ASV_ANN),$(SUB_VENV_TF1))
-cor-asv-ann-check:
+cor-asv-ann-check: check-tf1
 	$(MAKE) check OCRD_MODULES=cor-asv-ann VIRTUAL_ENV=$(SUB_VENV_TF1)
 else
 	$(pip_install_tf1nvidia)
@@ -262,7 +262,7 @@ $(call multirule,$(OCRD_DETECTRON2)): ocrd_detectron2 $(SUB_VENV_TF1)/bin/activa
 ifeq (0,$(MAKELEVEL))
 	$(MAKE) -B -o $< $(notdir $(OCRD_DETECTRON2)) VIRTUAL_ENV=$(SUB_VENV_TF1)
 	$(call delegate_venv,$(OCRD_DETECTRON2),$(SUB_VENV_TF1))
-ocrd_detectron2-check:
+ocrd_detectron2-check: check-tf1
 	$(MAKE) check OCRD_MODULES=ocrd_detectron2 VIRTUAL_ENV=$(SUB_VENV_TF1)
 else
 	. $(ACTIVATE_VENV) && $(MAKE) -C $< deps
@@ -279,7 +279,7 @@ $(call multirule,$(OCRD_COR_ASV_FST)): cor-asv-fst $(SUB_VENV_TF1)/bin/activate
 ifeq (0,$(MAKELEVEL))
 	$(MAKE) -B -o $< $(notdir $(OCRD_COR_ASV_FST)) VIRTUAL_ENV=$(SUB_VENV_TF1)
 	$(call delegate_venv,$(OCRD_COR_ASV_FST),$(SUB_VENV_TF1))
-cor-asv-fst-check:
+cor-asv-fst-check: check-tf1
 	$(MAKE) check OCRD_MODULES=cor-asv-fst VIRTUAL_ENV=$(SUB_VENV_TF1)
 else
 	$(pip_install_tf1nvidia)
@@ -296,7 +296,7 @@ $(call multirule,$(OCRD_KERASLM)): ocrd_keraslm $(SUB_VENV_TF1)/bin/activate
 ifeq (0,$(MAKELEVEL))
 	$(MAKE) -B -o $< $(notdir $(OCRD_KERASLM)) VIRTUAL_ENV=$(SUB_VENV_TF1)
 	$(call delegate_venv,$(OCRD_KERASLM),$(SUB_VENV_TF1))
-ocrd_keraslm-check:
+ocrd_keraslm-check: check-tf1
 	$(MAKE) check OCRD_MODULES=ocrd_keraslm VIRTUAL_ENV=$(SUB_VENV_TF1)
 else
 	$(pip_install_tf1nvidia)
@@ -368,7 +368,7 @@ $(call multirule,$(OCRD_SEGMENT)): ocrd_segment $(SUB_VENV_TF1)/bin/activate
 ifeq (0,$(MAKELEVEL))
 	$(MAKE) -B -o $< $(notdir $(OCRD_SEGMENT)) VIRTUAL_ENV=$(SUB_VENV_TF1)
 	$(call delegate_venv,$(OCRD_SEGMENT),$(SUB_VENV_TF1))
-ocrd_segment-check:
+ocrd_segment-check: check-tf1
 	$(MAKE) check OCRD_MODULES=ocrd_segment VIRTUAL_ENV=$(SUB_VENV_TF1)
 else
 	$(pip_install_tf1nvidia)
@@ -644,8 +644,13 @@ show:
 	@echo OCRD_EXECUTABLES = $(OCRD_EXECUTABLES:$(BIN)/%=%)
 
 check: $(OCRD_EXECUTABLES:%=%-check) $(OCRD_MODULES:%=%-check)
+ifeq (0,$(MAKELEVEL))
 	. $(ACTIVATE_VENV) && pip check
+endif
 %-check: ;
+
+check-tf1:
+	. $(SUB_VENV_TF1)/bin/activate && pip check
 
 .PHONY: $(OCRD_EXECUTABLES:%=%-check)
 $(OCRD_EXECUTABLES:%=%-check):

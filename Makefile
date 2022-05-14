@@ -98,7 +98,7 @@ endif
 # to ensure they are re-built (not considered up-to-date) when re-entering
 .DELETE_ON_ERROR:
 
-.PHONY: all modules clean help show check always-update install-models
+.PHONY: all modules clean help show check test always-update install-models
 
 clean: # add more prerequisites for clean below
 	$(RM) -r $(SUB_VENV)
@@ -197,6 +197,8 @@ ocrd: $(BIN)/ocrd
 deps-ubuntu-modules: core
 $(BIN)/ocrd: core
 	. $(ACTIVATE_VENV) && $(MAKE) -C $< install PIP="$(SEMPIP) pip" PIP_INSTALL="$(SEMPIP) pip install $(PIP_OPTIONS)" && touch -c $@
+core-test: core
+	. $(ACTIVATE_VENV) && $(MAKE) -C $< test
 
 # Convert the executable names (1) to a pattern rule,
 # so that the recipe will be used with single-recipe-
@@ -239,6 +241,8 @@ OCRD_KRAKEN += $(BIN)/ocrd-kraken-segment
 OCRD_KRAKEN += $(BIN)/ocrd-kraken-recognize
 $(call multirule,$(OCRD_KRAKEN)): ocrd_kraken $(BIN)/ocrd
 	$(pip_install)
+ocrd_kraken-test: ocrd_kraken
+	. $(ACTIVATE_VENV) && $(MAKE) -C $< test
 endif
 
 ifneq ($(findstring ocrd_ocropy, $(OCRD_MODULES)),)
@@ -313,6 +317,8 @@ ifeq (0,$(MAKELEVEL))
 	$(call delegate_venv,$(OCRD_KERASLM),$(SUB_VENV_TF1))
 ocrd_keraslm-check:
 	$(MAKE) check OCRD_MODULES=ocrd_keraslm VIRTUAL_ENV=$(SUB_VENV_TF1)
+ocrd_keraslm-test: ocrd_keraslm
+	. $(ACTIVATE_VENV) && $(MAKE) -C $< test
 else
 	$(pip_install_tf1nvidia)
 	$(pip_install)
@@ -342,6 +348,8 @@ ocrd_fileformat: GIT_RECURSIVE = --recursive
 OCRD_EXECUTABLES += $(BIN)/ocrd-fileformat-transform
 $(BIN)/ocrd-fileformat-transform: ocrd_fileformat $(BIN)/ocrd
 	. $(ACTIVATE_VENV) && $(MAKE) -C $< install-fileformat install
+ocrd_fileformat-test: ocrd_fileformat
+	. $(ACTIVATE_VENV) && $(MAKE) -C $< test
 endif
 
 ifneq ($(findstring ocrd_olena, $(OCRD_MODULES)),)
@@ -363,6 +371,8 @@ OCRD_EXECUTABLES += $(BIN)/ocrd-dinglehopper
 ocrd-dinglehopper: $(BIN)/ocrd-dinglehopper
 $(BIN)/ocrd-dinglehopper: dinglehopper $(BIN)/ocrd
 	$(pip_install)
+dinglehopper-test: dinglehopper
+	cd $< && pytest
 endif
 
 ifneq ($(findstring ocrd_segment, $(OCRD_MODULES)),)
@@ -416,6 +426,8 @@ OCRD_TESSEROCR += $(BIN)/ocrd-tesserocr-segment-region
 OCRD_TESSEROCR += $(BIN)/ocrd-tesserocr-segment-word
 $(call multirule,$(OCRD_TESSEROCR)): ocrd_tesserocr $(SHARE)/tesserocr $(BIN)/ocrd
 	$(pip_install)
+ocrd_tesserocr-test: ocrd_tesserocr
+	. $(ACTIVATE_VENV) && $(MAKE) -C $< test
 
 # tesserocr must wait for tesseract in parallel builds.
 ifneq ($(findstring tesseract, $(OCRD_MODULES)),)
@@ -464,6 +476,8 @@ OCRD_EXECUTABLES += $(OCRD_CALAMARI)
 OCRD_CALAMARI := $(BIN)/ocrd-calamari-recognize
 $(OCRD_CALAMARI): ocrd_calamari
 	$(pip_install)
+ocrd_calamari-test: ocrd_calamari
+	. $(ACTIVATE_VENV) && $(MAKE) -C $< test
 endif
 
 ifneq ($(findstring ocrd_pc_segmentation, $(OCRD_MODULES)),)
@@ -530,6 +544,8 @@ OCRD_EXECUTABLES += $(EYNOLLAH_SEGMENT)
 EYNOLLAH_SEGMENT := $(BIN)/ocrd-eynollah-segment
 $(EYNOLLAH_SEGMENT): eynollah
 	$(pip_install)
+eynollah-test: eynollah
+	. $(ACTIVATE_VENV) && $(MAKE) -C $< test
 endif
 
 ifneq ($(findstring ocrd_repair_inconsistencies, $(OCRD_MODULES)),)
@@ -544,6 +560,9 @@ OCRD_EXECUTABLES += $(OCRD_OLAHD_CLIENT)
 OCRD_OLAHD_CLIENT := $(BIN)/ocrd-olahd-client
 $(OCRD_OLAHD_CLIENT): ocrd_olahd_client $(BIN)/ocrd
 	$(pip_install)
+ocrd_olahd_client-test: ocrd_olahd_client
+	cd $< && git submodule update --init
+	. $(ACTIVATE_VENV) && $(MAKE) -C $< test
 endif
 
 ifneq ($(findstring workflow-configuration, $(OCRD_MODULES)),)
@@ -661,6 +680,8 @@ show:
 check: $(OCRD_EXECUTABLES:%=%-check) $(OCRD_MODULES:%=%-check)
 	. $(ACTIVATE_VENV) && pip check
 %-check: ;
+test: $(OCRD_EXECUTABLES:%=%-test) $(OCRD_MODULES:%=%-test)
+%-test: ;
 
 .PHONY: $(OCRD_EXECUTABLES:%=%-check)
 $(OCRD_EXECUTABLES:%=%-check):

@@ -220,7 +220,7 @@ $(BIN)/pip: $(ACTIVATE_VENV)
 .PHONY: wheel
 wheel: $(BIN)/wheel
 $(BIN)/wheel: | $(ACTIVATE_VENV)
-	. $(ACTIVATE_VENV) && $(SEMPIP) pip install --force-reinstall $(PIP_OPTIONS_E) wheel
+	. $(ACTIVATE_VENV) && $(SEMPIP) pip install $(PIP_OPTIONS_E) wheel
 
 # Install modules from source.
 

@@ -754,6 +754,7 @@ ocrd-all-module-dir.json: ocrd-all-tool.json $(OCRD_EXECUTABLES) $(ACTIVATE_VENV
 
 .PHONY: $(OCRD_EXECUTABLES:%=%-check)
 $(OCRD_EXECUTABLES:%=%-check):
+	-. $(ACTIVATE_VENV) && ${@:%-check=%} --help
 	. $(ACTIVATE_VENV) \
 	&& test -x ${@:%-check=%} \
 	&& command -v $(notdir ${@:%-check=%}) >/dev/null \

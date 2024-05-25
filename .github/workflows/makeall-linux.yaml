@@ -46,7 +46,7 @@ jobs:
     - name: Remove Docker images
       run: |
            df -h
-           docker rmi $(docker images -q)
+           docker rmi $(docker images -q) || true
            df -h
     - name: update apt repositories
       run: sudo apt-get update
